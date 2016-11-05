@@ -5,7 +5,7 @@ using System.Linq;
 class MainClass {
 	// The dictionary to check the words against. Normally this would be loaded from a file.
 	// If the dictionary is too big, loading it directly from the file into a trie would be better.
-	private static string[] dictArray = new string[] {
+	private static HashSet<string> dictSet = new HashSet<string>() {
 		"all",
 		"base",
 		"ball",
@@ -17,14 +17,14 @@ class MainClass {
 	public static void Main () {
 		// Print the result of a couple of tests. If the test returns null, print "null" instead.
 		Console.WriteLine("Array dictionary:");
-		Console.WriteLine(SplitWordWithArray("baseballbase", dictArray) ?? "null"); // "baseball base"
-		Console.WriteLine(SplitWordWithArray("gamebaseball", dictArray) ?? "null"); // "game baseball"
-		Console.WriteLine(SplitWordWithArray("basketballgame", dictArray) ?? "null"); // null
-		Console.WriteLine(SplitWordWithArray("baseballgame", dictArray) ?? "null"); // This is a corner case. Will currently split into "baseball game", but since "base ballgame" could also be valid in this instance, I wouldn't consider the case handled.
+		Console.WriteLine(SplitWordWithArray("baseballbase", dictSet) ?? "null"); // "baseball base"
+		Console.WriteLine(SplitWordWithArray("gamebaseball", dictSet) ?? "null"); // "game baseball"
+		Console.WriteLine(SplitWordWithArray("basketballgame", dictSet) ?? "null"); // null
+		Console.WriteLine(SplitWordWithArray("baseballgame", dictSet) ?? "null"); // This is a corner case. Will currently split into "baseball game", but since "base ballgame" could also be valid in this instance, I wouldn't consider the case handled.
 		
 		// Same as above, but this time using the trie-based implementation.
 		Console.WriteLine("\nTrie dictionary:");
-		Node dictTrie = CreateDictTrie(dictArray);
+		Node dictTrie = CreateDictTrie(dictSet);
 		Console.WriteLine(SplitWordWithTrie("baseballbase", dictTrie) ?? "null"); // "baseball base"
 		Console.WriteLine(SplitWordWithTrie("gamebaseball", dictTrie) ?? "null"); // "game baseball"
 		Console.WriteLine(SplitWordWithTrie("basketballgame", dictTrie) ?? "null"); // null
@@ -32,11 +32,12 @@ class MainClass {
 	}
 	
 	// Create the trie to use for spell checking, from an array of valid words.
-	private static Node CreateDictTrie(string[] dictArray) {
-		// Create the root node of the trie.
+	private static Node CreateDictTrie(HashSet<string> dictSet) {
+		String[] dictArray = new String[dictSet.Count];
+		dictSet.CopyTo(dictArray);
 		Node root = new Node();
 		// For every word in the dictionary, go through all the character in the word.
-		for (int i = 0; i < dictArray.Length; i++) {
+		for (int i = 0; i < dictArray.Count(); i++) {
 			string word = dictArray[i];
 			// Set the current node as the currently empty root node of the trie.
 			Node currentNode = root;
@@ -101,21 +102,21 @@ class MainClass {
 	
 	
 	// This implementation uses an array as a dictionary.
-	private static string SplitWordWithArray(string word, string[] dictList) {
+	private static string SplitWordWithArray(string word, HashSet<string> dictSet) {
 		word = word.ToLower();
 		// If the complete input string is already a word, just return it without splitting it.
-		if (dictList.Contains(word)) {
+		if (dictSet.Contains(word)) {
 			return word;
 		}
 		string output = null;
 		for (int i = 1; i < word.Length; i++) {
 			// Get the fist i characters of the string and check if they're a valid word.
 			string firstPart = word.Substring(0, i);
-			if (dictList.Contains(firstPart)) {
+			if (dictSet.Contains(firstPart)) {
 				// Then take the rest of the input string and run it through this method as the input string.
 				// This way the secondPart variable will either end up being null, meaning that the rest
 				// of the string isn't a valid word, or the space-seperated version of the input word.
-				string secondPart = SplitWordWithArray(word.Substring(i), dictList);
+				string secondPart = SplitWordWithArray(word.Substring(i), dictSet);
 				if (secondPart != null) {
 					// Both parts are valid and can be set as candidates for the final output.
 					// The reason the output is not just returned here, is because we would rather return compound 
