@@ -43,20 +43,6 @@ class MainClass {
 		return root;
 	}
 	
-	// Check whether a string is a valid word.
-	private static bool IsWord(string word, Node dictTrie) {
-		word = word.ToLower();
-		Node node = dictTrie;
-		for (int i = 0; i < word.Length; i++) {
-			char character = word[i];
-			if (!node.ContainsKey(character)) {
-				return false;
-			}
-			node = node[character];
-		}
-		return node.IsWord;
-	}
-	
 	// Below you'll find two implementations of the word splitter. They both do the same thing, but one of them uses an array as the dictionary while the other one uses a trie, created using the CreateDictTrie method.
 	// The methods will split an input string into multiple space-seperated words from a dictionary.
 	// If the input word is in the dictionary return it.
@@ -66,7 +52,7 @@ class MainClass {
 	// This implementation uses a trie as a dictionary.
 	private static string SplitWordWithTrie(string word, Node dictTrie) {
 		word = word.ToLower();
-		if (IsWord(word, dictTrie)) {
+		if (dictTrie.ContainsWord(word)) {
 			return word;
 		}
 		Node node = dictTrie;
@@ -119,7 +105,21 @@ class MainClass {
 	}
 }
 
-// Class used for the trie structure.
+// Node class used for the trie structure.
 public class Node : Dictionary<char, Node> {
+	// Whether the string terminating at this node is a valid word.
 	public bool IsWord { get; set; }
+	// Check whether a word is contained within the node's children.
+	public bool ContainsWord(string word) {
+		word = word.ToLower();
+		Node node = this;
+		for (int i = 0; i < word.Length; i++) {
+			char character = word[i];
+			if (!node.ContainsKey(character)) {
+				return false;
+			}
+			node = node[character];
+		}
+		return node.IsWord;
+	}
 }
