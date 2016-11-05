@@ -33,24 +33,24 @@ class MainClass {
 	
 	// Create the trie to use for spell checking, from an array of valid words.
 	private static Node CreateDictTrie(string[] dictArray) {
-		// The root node.
+		// Create the root node of the trie.
 		Node root = new Node();
 		// For every word in the dictionary, go through all the character in the word.
 		for (int i = 0; i < dictArray.Length; i++) {
 			string word = dictArray[i];
-			// Set the current working node as the currently empty root node of the trie.
-			Node node = root;
+			// Set the current node as the currently empty root node of the trie.
+			Node currentNode = root;
 			// Set the current node to the node with the key corresponding to the character in the word.
 			// If no node with this key exists, create a new one and add it under this key.
 			for (int j = 0; j < word.Length; j++) {
-				char character = word[j];
-				if (!node.ContainsKey(character)) {
-					node[character] = new Node();
+				string character = word[j].ToString();
+				if (!currentNode.ContainsKey(character)) {
+					currentNode[character] = new Node();
 				}
-				node = node[character];
+				currentNode = currentNode[character];
 			}
 			// Once the end of the word has been reached, set the last node as the end of the word.
-			node.IsWord = true;
+			currentNode.IsWord = true;
 			
 		}
 		return root;
@@ -70,18 +70,18 @@ class MainClass {
 		if (dictTrie.ContainsWord(word)) {
 			return word;
 		}
-		// Set the current working node to the root of the dictionary trie.
-		Node node = dictTrie;
+		// Set the current node to the root of the dictionary trie.
+		Node currentNode = dictTrie;
 		string output = null;
 		for (int i = 0; i < word.Length; i++) {
-			char character = word[i];
+			string character = word[i].ToString();
 			// If the character isn't in the current node's keys, the word isn't in the dictionary.
-			if (!node.ContainsKey(character)) {
+			if (!currentNode.ContainsKey(character)) {
 				break;
 			}
-			// Set the current working node to the child node with the current character as the key.
-			node = node[character];
-			if (node.IsWord) {
+			// Set the current node to the child node with the current character as the key.
+			currentNode = currentNode[character];
+			if (currentNode.IsWord) {
 				// Get the part of the string that has been determined to be a word.
 				string firstPart = word.Substring(0, i + 1);
 				// Then take the rest of the input string and run it through this method as the input string.
@@ -129,20 +129,22 @@ class MainClass {
 }
 
 // Node class used for the trie structure.
-public class Node : Dictionary<char, Node> {
+public class Node : Dictionary<string, Node> {
+	// Use OrdinalIgnoreCase to ensure the character used as the key is case insensitive.
+	public Node() : base(StringComparer.OrdinalIgnoreCase) {}
 	// Whether the string terminating at this node is a valid word.
 	public bool IsWord { get; set; }
 	// Check whether a word is contained within the node's children.
 	public bool ContainsWord(string word) {
 		word = word.ToLower();
-		Node node = this;
+		Node currentNode = this;
 		for (int i = 0; i < word.Length; i++) {
-			char character = word[i];
-			if (!node.ContainsKey(character)) {
+			string character = word[i].ToString();
+			if (!currentNode.ContainsKey(character)) {
 				return false;
 			}
-			node = node[character];
+			currentNode = currentNode[character];
 		}
-		return node.IsWord;
+		return currentNode.IsWord;
 	}
 }
